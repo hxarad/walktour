@@ -1,7 +1,7 @@
 import * as React from 'react';
+import { render } from '@testing-library/react';
 import { mockGBCR } from '../mocks';
 import { dist, Coords, getElementCoords, getNearestScrollAncestor, Dims, fitsWithin, isWithinAt, isValidCoords, isValidDims, areaDiff } from '../../src/utils/dom';
-import { mount } from 'enzyme';
 
 // casting undefined as number to bypass noImplicitAny, which stops the tests from running 
 const mockDataGen = () => ({
@@ -165,77 +165,86 @@ describe('getElementCoords', () => {
 
 // testing "getNearestScrollAncestor", which crawls up the dom tree looking for the nearest element that has scrolling capabilities.
 describe('getNearestScrollAncestor', () => {
-  const page = mount(<div id='parent'>
-    <div id='child-1'>
-      <button id="btn">button</button>
-    </div>
-    <div id='child-2' style={{ overflow: 'scroll' }}>
-      <div id='grandchild'>
-        <div id='great-grandchild'>
-          <div id='great-great-grandchild' style={{ overflow: 'visible' }}>
-            <div id="great-great-great-grandchild"></div>
-          </div>
+  const renderScrollTree = () =>
+    render(
+      <div id='parent'>
+        <div id='child-1'>
+          <button id="btn">button</button>
         </div>
-      </div>
-      <div id='grandchild-2' style={{ overflowY: 'auto' }}>
-        <div id="great-grandchild-2">overflow y child</div>
-      </div>
-      <div id='grandchild-3' style={{ overflowX: 'hidden' }}>
-        <div id="great-grandchild-3">overflow hidden child</div>
-      </div>
-      <div id='child-3' style={{ overflowX: 'visible', overflowY: 'scroll' }}>
-        <div id="grandchild-4"></div>
-      </div>
+        <div id='child-2' style={{ overflow: 'scroll' }}>
+          <div id='grandchild'>
+            <div id='great-grandchild'>
+              <div id='great-great-grandchild' style={{ overflow: 'visible' }}>
+                <div id="great-great-great-grandchild"></div>
+              </div>
+            </div>
+          </div>
+          <div id='grandchild-2' style={{ overflowY: 'auto' }}>
+            <div id="great-grandchild-2">overflow y child</div>
+          </div>
+          <div id='grandchild-3' style={{ overflowX: 'hidden' }}>
+            <div id="great-grandchild-3">overflow hidden child</div>
+          </div>
+          <div id='child-3' style={{ overflowX: 'visible', overflowY: 'scroll' }}>
+            <div id="grandchild-4"></div>
+          </div>
 
-    </div>
-  </div>);
+        </div>
+      </div>);
 
   test('default scroll ancestor is document body', () => {
-    const button = page.find('#btn').getDOMNode();
+    const { container } = renderScrollTree();
+    const button = container.querySelector('#btn') as HTMLElement;
     expect(getNearestScrollAncestor(button)).toBe(document.body);
 
   })
 
   test('nested descendant finds correct element', () => {
-    const nestedChild = page.find('#great-grandchild').getDOMNode();;
-    const c2 = page.find('#child-2').getDOMNode()
+    const { container } = renderScrollTree();
+    const nestedChild = container.querySelector('#great-grandchild') as HTMLElement;
+    const c2 = container.querySelector('#child-2') as HTMLElement;
 
     expect(getNearestScrollAncestor(nestedChild)).not.toBe(document.body);
     expect(getNearestScrollAncestor(nestedChild)).toBe(c2)
   })
 
   test('overflow visible doesnt count as a scroll container', () => {
-    const g3gc = page.find('#great-great-great-grandchild').getDOMNode()
-    const gggc = page.find('#great-great-grandchild').getDOMNode();
+    const { container } = renderScrollTree();
+    const g3gc = container.querySelector('#great-great-great-grandchild') as HTMLElement;
+    const gggc = container.querySelector('#great-great-grandchild') as HTMLElement;
     expect(getNearestScrollAncestor(g3gc)).not.toBe(gggc);
     expect(getNearestScrollAncestor(g3gc)).toBe(getNearestScrollAncestor(gggc)); //they should have the same ancestor, whatever it may be
   })
 
   test('direct descendant returns parent', () => {
-    const grandchild = page.find('#grandchild').getDOMNode()
-    const c2 = page.find('#child-2').getDOMNode();
+    const { container } = renderScrollTree();
+    const grandchild = container.querySelector('#grandchild') as HTMLElement;
+    const c2 = container.querySelector('#child-2') as HTMLElement;
 
     expect(getNearestScrollAncestor(grandchild)).toBe(c2);
   })
 
   test('self returns self', () => {
-    const greatGrandchild = page.find('#great-grandchild-2').getDOMNode();
-    const grandchildScroll = page.find('#grandchild-2').getDOMNode();
+    const { container } = renderScrollTree();
+    const greatGrandchild = container.querySelector('#great-grandchild-2') as HTMLElement;
+    const grandchildScroll = container.querySelector('#grandchild-2') as HTMLElement;
 
     expect(getNearestScrollAncestor(grandchildScroll)).toBe(grandchildScroll) //self
     expect(getNearestScrollAncestor(greatGrandchild)).toBe(grandchildScroll); //immediate descendant
   })
 
   test('overflow hidden doesnt count', () => {
-    const ggc3 = page.find('#great-grandchild-3').getDOMNode();
-    const g3 = page.find('#grandchild-3').getDOMNode();
+    const { container } = renderScrollTree();
+    const ggc3 = container.querySelector('#great-grandchild-3') as HTMLElement;
+    const g3 = container.querySelector('#grandchild-3') as HTMLElement;
 
     expect(getNearestScrollAncestor(ggc3)).not.toBe(g3); //overflow is hidden, don't put the tour there
   })
 
   test('only one axis needs to allow scrolling', () => {
-    const gc4 = page.find('#grandchild-4').getDOMNode();
-    const c3 = page.find('#child-3').getDOMNode();
+    const { container } = renderScrollTree();
+    const gc4 = container.querySelector('#grandchild-4') as HTMLElement;
+    const c3 = container.querySelector('#child-3') as HTMLElement;
 
     expect(getNearestScrollAncestor(gc4)).toBe(c3);
   })

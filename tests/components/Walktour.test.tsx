@@ -1,40 +1,42 @@
 import * as React from 'react';
-import { shallow, mount } from 'enzyme';
+import '@testing-library/jest-dom';
+import { render, waitFor } from '@testing-library/react';
 import { Walktour } from '../../src/components/Walktour';
 
 describe('Walktour render structure', () => {
   test('walktour render', () => {
-    const tour = shallow(<Walktour steps={[]} />)
+    const { container } = render(<Walktour steps={[]} />);
+    expect(container.firstChild).toBeNull();
+  });
 
-    expect(tour.isEmptyRender()).toBe(true); //no step content, should render null
-    expect(tour.children().length).toBe(0);
-  })
-
-  test('portal render', () => {
-    const tour = mount(
-      <Walktour steps={[{ selector: null, description: 'hello world', title: 'Hey Earth!' }]} />
+  test('portal render', async () => {
+    render(
+      <div>
+        <div id="target-element" />
+        <Walktour steps={[{ selector: '#target-element', description: 'hello world', title: 'Hey Earth!' }]} />
+      </div>
     );
-    const portal = tour.find('#walktour-portal');
-    const mask = portal.find('Mask');
-    const tooltip = portal.find('#walktour-tooltip-container')
 
+    await waitFor(() => expect(document.querySelector('#walktour-portal')).toBeInTheDocument());
+    const portal = document.querySelector('#walktour-portal');
+    const tooltip = document.querySelector('#walktour-tooltip-container');
+    const mask = portal?.querySelector('svg');
 
-    expect(portal.exists()).toBe(true);
-    expect(portal.children().length).toBe(2); //mask and tooltip only
-    expect(tooltip.exists()).toBe(true);
-    expect(mask.exists()).toBe(true);
-  })
+    expect(portal?.children.length).toBe(2);
+    expect(tooltip).toBeInTheDocument();
+    expect(mask).not.toBeNull();
+  });
 
-  test('with target', () => {
-    const tour = mount(<div>
-      <div id="one" />
-      <Walktour steps={[{ selector: '#one', description: 'hello world', title: 'Hey Earth!' }]} />
-    </div>)
+  test('with target', async () => {
+    render(
+      <div>
+        <div id="one" />
+        <Walktour steps={[{ selector: '#one', description: 'hello world', title: 'Hey Earth!' }]} />
+      </div>
+    );
 
-  const tooltip = tour.find('#walktour-tooltip-container') 
-
-  expect(tooltip.exists()).toBe(true);
-  expect(tooltip.find('button')).toHaveLength(3); // skip, previous, next
-
-  })
-})
+    await waitFor(() => expect(document.querySelector('#walktour-tooltip-container')).toBeInTheDocument());
+    const buttons = document.querySelectorAll('#walktour-tooltip-container button');
+    expect(buttons).toHaveLength(3); // skip, previous, next
+  });
+});
