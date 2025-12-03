@@ -8,13 +8,28 @@ export interface MaskOptions {
   radius: number;
   close: () => void;
   tourRoot: Element;
+  fillColor?: string;
+  maskOpacity?: number;
+  maskBackdropFilter?: string;
   disableMaskInteraction?: boolean;
   disableCloseOnClick?: boolean;
   maskId: string;
 }
 
 export function Mask(props: MaskOptions): JSX.Element {
-  const { targetInfo, disableMaskInteraction, padding, radius, tourRoot, close, disableCloseOnClick, maskId } = props;
+  const {
+    targetInfo,
+    disableMaskInteraction,
+    padding,
+    radius,
+    tourRoot,
+    close,
+    disableCloseOnClick,
+    maskId,
+    fillColor,
+    maskOpacity,
+    maskBackdropFilter
+  } = props;
   const {width: containerWidth, height: containerHeight} = getViewportScrollDims(tourRoot);
   const pathId = `clip-path-${maskId}`;
 
@@ -66,30 +81,48 @@ export function Mask(props: MaskOptions): JSX.Element {
     height: containerHeight,
     width: containerWidth,
     pointerEvents: disableMaskInteraction ? 'auto' : 'none',
+    // position: 'relative',
+    // zIndex: 1
   }
 
-  return (
-    <svg style={svgStyle}>
-      {targetInfo &&
-        <defs>
-          <clipPath id={pathId}>
-            <path d={getCutoutPath(targetInfo)}
-            />
-          </clipPath>
-        </defs>
-      }
+  const maskFilterStyle: React.CSSProperties | undefined = maskBackdropFilter ? {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: containerWidth,
+    height: containerHeight,
+    pointerEvents: 'none',
+    backdropFilter: maskBackdropFilter,
+    WebkitBackdropFilter: maskBackdropFilter,
+    clipPath: targetInfo ? `url(#${pathId})` : undefined,
+    zIndex: -1,
+  } : undefined;
 
-      <rect
-        onClick={disableCloseOnClick ? undefined : close}
-        x={0}
-        y={0}
-        width={containerWidth}
-        height={containerHeight}
-        fill='black'
-        fillOpacity={0.3}
-        pointerEvents='auto'
-        clipPath={targetInfo ? `url(#${pathId})` : undefined}
-      />
-    </svg>
+  return (
+    <>
+      {maskBackdropFilter && targetInfo && <div style={maskFilterStyle} />}
+      <svg style={svgStyle}>
+        {targetInfo &&
+          <defs>
+            <clipPath id={pathId}>
+              <path d={getCutoutPath(targetInfo)}
+              />
+            </clipPath>
+          </defs>
+        }
+
+        <rect
+          onClick={disableCloseOnClick ? undefined : close}
+          x={0}
+          y={0}
+          width={containerWidth}
+          height={containerHeight}
+          fill={fillColor ?? 'black'}
+          fillOpacity={maskOpacity ?? 0.3}
+          pointerEvents='auto'
+          clipPath={targetInfo ? `url(#${pathId})` : undefined}
+        />
+      </svg>
+    </>
   );
 }

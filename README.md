@@ -67,6 +67,9 @@ Step-level options will take precedence over global options, so take care when u
 | _orientationPreferences_ | Array<`CardinalOrientation`> | A subset of all tooltip alignments from which to automatically select the tooltip position. Manual positioning can be achieved by providing an array with only a single orientation. |
 | _maskPadding_ | number | Distance between the targeted element and the mask (determines the size of the cutout). |
 | _maskRadius_ | number | Defines a radius of the mask's corners. Default is 0. |
+| _maskFillColor_ | string | Fill color of the mask overlay. Default is `black`. |
+| _maskOpacity_ | number | Opacity of the mask overlay. Default is `0.3`. |
+| _maskBackdropFilter_ | string | CSS `backdrop-filter` applied to the masked area (not the cutout). |
 | _tooltipSeparation_ | number | Distance between the targeted element and the tooltip. |
 | _transition_ | string | String representing the value of CSS transition shorthand property. |
 | _nextLabel_ | string | Text to be injected into the `next` button in the tooltip footer. Default is "next". |

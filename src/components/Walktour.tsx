@@ -25,6 +25,9 @@ export interface WalktourOptions {
   orientationPreferences?: CardinalOrientation[];
   maskPadding?: number;
   maskRadius?: number;
+  maskFillColor?: string;
+  maskOpacity?: number;
+  maskBackdropFilter?: string;
   tooltipSeparation?: number;
   transition?: string;
   customTitleRenderer?: (title?: string, tourLogic?: WalktourLogic) => JSX.Element;
@@ -75,6 +78,8 @@ export interface WalktourProps extends WalktourOptions {
 const walktourDefaultProps: Partial<WalktourProps> = {
   maskPadding: 5,
   maskRadius: 0,
+  maskFillColor: 'black',
+  maskOpacity: 0.3,
   tooltipSeparation: 10,
   transition: 'top 300ms ease, left 300ms ease',
   disableMaskInteraction: false,
@@ -122,6 +127,9 @@ export const Walktour = (props: WalktourProps) => {
     selector,
     maskPadding,
     maskRadius,
+    maskFillColor,
+    maskOpacity,
+    maskBackdropFilter,
     disableMaskInteraction,
     disableCloseOnClick,
     tooltipSeparation,
@@ -392,6 +400,9 @@ export const Walktour = (props: WalktourProps) => {
               targetInfo={getTargetInfo(tourRoot, target)}
               disableMaskInteraction={disableMaskInteraction}
               disableCloseOnClick={disableCloseOnClick}
+              fillColor={maskFillColor}
+              maskOpacity={maskOpacity}
+              maskBackdropFilter={maskBackdropFilter}
               padding={maskPadding}
               radius={maskRadius}
               tourRoot={tourRoot}
@@ -425,4 +436,3 @@ export const Walktour = (props: WalktourProps) => {
     return render();
   }
 }
-
