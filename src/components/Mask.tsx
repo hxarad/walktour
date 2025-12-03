@@ -81,8 +81,6 @@ export function Mask(props: MaskOptions): JSX.Element {
     height: containerHeight,
     width: containerWidth,
     pointerEvents: disableMaskInteraction ? 'auto' : 'none',
-    // position: 'relative',
-    // zIndex: 1
   }
 
   const maskFilterStyle: React.CSSProperties | undefined = maskBackdropFilter ? {
