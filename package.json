@@ -22,8 +22,7 @@
     "build": "parcel build",
     "test": "jest",
     "build-docs": "npm run build-demo",
-    "prepublishOnly": "rm -rf dist && npm run build",
-    "prepare": "npm run build"
+    "prepublishOnly": "rm -rf dist && npm run build"
   },
   "repository": {
     "type": "git",
